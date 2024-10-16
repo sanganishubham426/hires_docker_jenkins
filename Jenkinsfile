@@ -11,7 +11,7 @@ pipeline {
         stage('Build and Deploy') {
             steps {
                 script {
-                    sh 'docker-compose -f Docker-compose.yml up -d --build'
+                    sh 'docker-compose -f docker-compose.yml up -d --build'
                 }
             }
         }
@@ -25,7 +25,7 @@ pipeline {
 
     post {
         always {
-            sh 'docker-compose -f Docker-compose.yml down'
+            sh 'docker-compose -f docker-compose.yml down'
         }
     }
 }
