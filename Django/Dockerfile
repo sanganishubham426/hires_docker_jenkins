@@ -24,7 +24,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh  # Make the entrypoint script executable
 
 # Set the entrypoint to the script
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/hires/entrypoint.sh"]
 
 # The default command to run (can be overridden)
 #CMD ["gunicorn", "hires.wsgi:application", "--bind", "0.0.0.0:8000"]
