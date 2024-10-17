@@ -4,14 +4,28 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'github-credentials', branch: 'main', url: 'https://github.com/sanganishubham426/hires_docker_jenkins.git'
+                // Use the specific Git plugin steps instead
+                git url: 'https://github.com/sanganishubham426/hires_docker_jenkins.git', branch: 'main'
+            }
+        }
+
+        stage('Check Docker Version') {
+            steps {
+                script {
+                    bat 'docker --version'
+                }
             }
         }
 
         stage('Build and Deploy') {
             steps {
                 script {
-                    sh 'docker-compose -f docker-compose.yml up -d --build'
+                    try {
+                        bat 'docker-compose -f docker-compose.yml up -d'
+                    } catch (Exception e) {
+                        echo "Build failed: ${e}"
+                        error("Stopping the pipeline due to build failure.")
+                    }
                 }
             }
         }
@@ -23,9 +37,4 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            sh 'docker-compose -f docker-compose.yml down'
-        }
-    }
 }
