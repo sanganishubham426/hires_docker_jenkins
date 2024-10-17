@@ -1,30 +1,31 @@
-# backend/Dockerfile
-FROM python:3.12
+# Specify the base image
+FROM node:22
 
-RUN apt-get update && apt-get install -y \
+# Install dependencies and tools
+RUN apt-get update && \
+    apt-get install -y \
     curl \
     wget \
     vim \
-    dos2unix \  # Install dos2unix to convert line endings
-    && apt-get clean
+    dos2unix && \
+    apt-get clean
 
+# Set the working directory
 WORKDIR /hires
 
+# Copy the requirements file and install dependencies
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
+# Copy the rest of the application code
 COPY . .
 
-# Copy the entrypoint script
+# Copy and set up the entrypoint script
 COPY entrypoint.sh /entrypoint.sh
-
-# Convert line endings of entrypoint.sh to Unix style
-RUN dos2unix /entrypoint.sh
-
-# Ensure the script is executable
-RUN chmod +x /entrypoint.sh
+RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Set the entrypoint to the script
 ENTRYPOINT ["/entrypoint.sh"]
 
+# Specify the command to run the application
 #CMD ["gunicorn", "app.wsgi:application", "--bind", "0.0.0.0:8000"]
