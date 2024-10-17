@@ -14,4 +14,4 @@ python manage.py collectstatic --noinput
 
 # Start Gunicorn
 echo "Starting Gunicorn Server..."
-exec gunicorn hires.wsgi:application --bind 0.0.0.0:8000
+exec gunicorn --log-level debug hires.wsgi:application --bind 0.0.0.0:8000
