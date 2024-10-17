@@ -1,5 +1,5 @@
 # Specify the base image
-FROM node:22
+FROM python:3.12
 
 # Install dependencies and tools
 RUN apt-get update && \
