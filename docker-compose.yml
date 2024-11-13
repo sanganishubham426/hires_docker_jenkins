@@ -14,53 +14,47 @@ services:
       - backend
     restart: always
 
-
   hires:
-    build: ./Django
-    #image: voidbroaderai/hires-react:latest
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/django-app:latest  # Pull from ECR
     container_name: Hires_Django
     env_file:
-      - .env    
+      - .env  # Ensure environment variables are provided for Django
     volumes:
-      - ./Django:/hires
-      - static_volume:/hires/static
-      - media_volume:/hires/media
+      - ./Django:/hires  # Mount local Django directory for static/media files (optional)
+      - static_volume:/hires/static  # Persist static files
+      - media_volume:/hires/media  # Persist media files
     networks:
       - backend
     depends_on:
       - db
     restart: always
 
-
   react-production:
-    build: ./React
-    #image: voidbroaderai/hires-django:latest
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/react-app:latest  # Pull from ECR
     container_name: Hires_react
     networks:
       - frontend
       - backend
     restart: always
 
-  
   nginx:
-    build: ./nginx
+    build: ./nginx  # This is optional. If you have an existing Nginx image in ECR, replace this with an `image` directive
     container_name: Hires_nginx
     volumes:
-      - static_volume:/hires/static
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
-      - media_volume:/hires/media
+      - static_volume:/hires/static  # Mount static files
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # Mount custom Nginx configuration
+      - ./nginx/ssl:/etc/nginx/ssl  # Mount SSL certificates (if using HTTPS)
+      - media_volume:/hires/media  # Mount media files
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:80"  # Expose HTTP port
+      - "443:443"  # Expose HTTPS port (if using SSL)
     depends_on:
-      - hires
-      - react-production
+      - hires  # Ensure Django is up before Nginx starts
+      - react-production  # Ensure React app is up before Nginx starts
     networks:
       - backend
       - frontend
     restart: always
-
 
 volumes:
   postgres_data:
