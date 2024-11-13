@@ -14,47 +14,53 @@ services:
       - backend
     restart: always
 
+
   hires:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/django-app:latest  # Pull from ECR
+    build: ./Django
+    #image: voidbroaderai/hires-react:latest
     container_name: Hires_Django
     env_file:
-      - .env  # Ensure environment variables are provided for Django
+      - .env    
     volumes:
-      - ./Django:/hires  # Mount local Django directory for static/media files (optional)
-      - static_volume:/hires/static  # Persist static files
-      - media_volume:/hires/media  # Persist media files
+      - ./Django:/hires
+      - static_volume:/hires/static
+      - media_volume:/hires/media
     networks:
       - backend
     depends_on:
       - db
     restart: always
 
+
   react-production:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/react-app:latest  # Pull from ECR
+    build: ./React
+    #image: voidbroaderai/hires-django:latest
     container_name: Hires_react
     networks:
       - frontend
       - backend
     restart: always
 
+  
   nginx:
-    build: ./nginx  # This is optional. If you have an existing Nginx image in ECR, replace this with an `image` directive
+    build: ./nginx
     container_name: Hires_nginx
     volumes:
-      - static_volume:/hires/static  # Mount static files
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # Mount custom Nginx configuration
-      - ./nginx/ssl:/etc/nginx/ssl  # Mount SSL certificates (if using HTTPS)
-      - media_volume:/hires/media  # Mount media files
+      - static_volume:/hires/static
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - media_volume:/hires/media
     ports:
-      - "80:80"  # Expose HTTP port
-      - "443:443"  # Expose HTTPS port (if using SSL)
+      - "80:80"
+      - "443:443"
     depends_on:
-      - hires  # Ensure Django is up before Nginx starts
-      - react-production  # Ensure React app is up before Nginx starts
+      - hires
+      - react-production
     networks:
       - backend
       - frontend
     restart: always
+
 
 volumes:
   postgres_data:
