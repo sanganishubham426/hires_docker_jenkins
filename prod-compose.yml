@@ -24,7 +24,6 @@ services:
     env_file:
       - .env
     volumes:
-      - ./Django:/hires
       - static_volume:/hires/static
       - media_volume:/hires/media
     networks:
@@ -46,8 +45,6 @@ services:
     container_name: Hires_nginx
     volumes:
       - static_volume:/hires/static
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
       - media_volume:/hires/media
     ports:
       - "80:80"
