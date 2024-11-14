@@ -10,7 +10,7 @@ COPY package*.json ./
 # Set up npm cache in a designated directory to improve caching
 RUN --mount=type=cache,target=/usr/src/app/.npm \
     npm set cache /usr/src/app/.npm && \
-    npm install
+    npm install --verbose
 
 # Copy the rest of the application code to the container
 COPY . .
