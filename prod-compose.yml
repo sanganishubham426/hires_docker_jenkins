@@ -2,14 +2,10 @@ services:
   db:
     image: postgres:latest
     container_name: Hires_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_USER: hires
       POSTGRES_PASSWORD: shubham@123
       POSTGRES_DB: hires_db
-    networks:
-      - backend
     restart: always
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "hires"]
@@ -17,6 +13,8 @@ services:
       retries: 5
       start_period: 30s
       timeout: 10s
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   hires:
     image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires:latest
@@ -26,18 +24,11 @@ services:
     volumes:
       - static_volume:/hires/static
       - media_volume:/hires/media
-    networks:
-      - backend
-    depends_on:
-      - db
     restart: always
 
   react-production:
     image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-react:latest
     container_name: Hires_react
-    networks:
-      - frontend
-      - backend
     restart: always
 
   nginx:
@@ -49,21 +40,9 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    depends_on:
-      - hires
-      - react-production
-    networks:
-      - backend
-      - frontend
     restart: always
 
 volumes:
   postgres_data:
   static_volume:
   media_volume:
-
-networks:
-  backend:
-    driver: bridge
-  frontend:
-    driver: bridge
