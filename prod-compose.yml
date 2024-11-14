@@ -5,14 +5,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: hires
+      POSTGRES_PASSWORD: shubham@123
+      POSTGRES_DB: hires_db
     networks:
       - backend
     restart: always
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      test: ["CMD", "pg_isready", "-U", "hires"]
       interval: 10s
       retries: 5
       start_period: 30s
