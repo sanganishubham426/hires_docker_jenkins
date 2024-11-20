@@ -1,32 +1,27 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:latest
-    container_name: Hires_db
     environment:
       POSTGRES_USER: hires
       POSTGRES_PASSWORD: shubham@123
       POSTGRES_DB: hires_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "hires"]
       interval: 10s
       retries: 5
       start_period: 30s
       timeout: 10s
-    deploy:
-      resources:
-        limits:
-          memory: 256M
 
   hires:
     image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires:latest
-    container_name: Hires_Django
     env_file:
       - .env
-    volumes:
-      - static_volume:/hires/static
-      - media_volume:/hires/media
     deploy:
       replicas: 1
       resources:
@@ -35,7 +30,6 @@ services:
 
   react-production:
     image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-react:latest
-    container_name: Hires_react
     deploy:
       replicas: 1
       resources:
@@ -44,10 +38,6 @@ services:
 
   nginx:
     image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-nginx:latest
-    container_name: Hires_nginx
-    volumes:
-      - static_volume:/hires/static
-      - media_volume:/hires/media
     ports:
       - "80:80"
     deploy:
@@ -55,8 +45,3 @@ services:
       resources:
         limits:
           memory: 256M
-
-volumes:
-  postgres_data:
-  static_volume:
-  media_volume:
