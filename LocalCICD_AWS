@@ -1,0 +1,121 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-1'  // AWS region
+        ECR_REPOSITORY = '311141541828.dkr.ecr.us-east-1.amazonaws.com'  // ECR repository URL
+        CLUSTER_NAME = 'HiresDev'  // ECS cluster name
+        IMAGE_TAG = 'lts'  // Fixed image tag (can adjust if dynamic tagging is needed)
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/sanganishubham426/hires_docker_jenkins.git', branch: 'main'
+            }
+        }
+
+        stage('Check Docker Version') {
+            steps {
+                script {
+                    sh 'docker --version'
+                }
+            }
+        }
+
+        stage('Build React Docker Image') {
+            steps {
+                script {
+                    sh 'docker build -t hires/react:${IMAGE_TAG} -f React/Dockerfile ./React/'
+                }
+            }
+        }
+
+        stage('Build Django Docker Image') {
+            steps {
+                script {
+                    sh 'docker build -t hires/django:${IMAGE_TAG} -f Django/Dockerfile ./Django/'
+                }
+            }
+        }
+
+        stage('Build Nginx Docker Image') {
+            steps {
+                script {
+                    sh 'docker build -t hires/nginx:${IMAGE_TAG} -f nginx/Dockerfile ./nginx/'
+                }
+            }
+        }
+
+        stage('Login to ECR') {
+            steps {
+                withCredentials([aws(credentialsId: 'dev-user-aws-credentials')]) {
+                    script {
+                        sh """
+                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Create ECR Repositories') {
+            steps {
+                withCredentials([aws(credentialsId: 'dev-user-aws-credentials')]) {
+                    script {
+                        // Check and create repositories for each image if not exist
+                        sh """
+                        aws ecr describe-repositories --repository-names hires-react --region ${AWS_REGION} || aws ecr create-repository --repository-name hires-react --region ${AWS_REGION}
+                        aws ecr describe-repositories --repository-names hires-django --region ${AWS_REGION} || aws ecr create-repository --repository-name hires-django --region ${AWS_REGION}
+                        aws ecr describe-repositories --repository-names hires-nginx --region ${AWS_REGION} || aws ecr create-repository --repository-name hires-nginx --region ${AWS_REGION}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push Images to ECR') {
+            steps {
+                script {
+                    // Tag and push images to ECR repositories
+                    sh """
+                    docker tag hires/react:${IMAGE_TAG} ${ECR_REPOSITORY}/hires-react:${IMAGE_TAG}
+                    docker tag hires/django:${IMAGE_TAG} ${ECR_REPOSITORY}/hires-django:${IMAGE_TAG}
+                    docker tag hires/nginx:${IMAGE_TAG} ${ECR_REPOSITORY}/hires-nginx:${IMAGE_TAG}
+
+                    docker push ${ECR_REPOSITORY}/hires-react:${IMAGE_TAG}
+                    docker push ${ECR_REPOSITORY}/hires-django:${IMAGE_TAG}
+                    docker push ${ECR_REPOSITORY}/hires-nginx:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to ECS') {
+            steps {
+                withCredentials([aws(credentialsId: 'dev-user-aws-credentials')]) {
+                    script {
+                        try {
+                            // Configure ECS CLI with cluster and region
+                            sh """
+                            ecs-cli configure --region ${AWS_REGION} --cluster ${CLUSTER_NAME}
+                            ecs-cli compose --file prod-compose.yml service up --force-deployment
+
+  
+                            """
+                        } catch (Exception e) {
+                            echo "Deployment failed: ${e}"
+                            error("Stopping pipeline due to ECS deployment failure")
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Post-deployment') {
+            steps {
+                echo 'Deployment completed successfully!'
+            }
+        }
+    }
+}
