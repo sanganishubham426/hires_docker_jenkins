@@ -6,15 +6,18 @@ services:
       POSTGRES_USER: hires
       POSTGRES_PASSWORD: shubham@123
       POSTGRES_DB: hires_db
-    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "hires"]
       interval: 10s
       retries: 5
       start_period: 30s
       timeout: 10s
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   hires:
     image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires:latest
@@ -24,12 +27,20 @@ services:
     volumes:
       - static_volume:/hires/static
       - media_volume:/hires/media
-    restart: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
 
   react-production:
     image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-react:latest
     container_name: Hires_react
-    restart: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 256M
 
   nginx:
     image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-nginx:latest
@@ -39,8 +50,11 @@ services:
       - media_volume:/hires/media
     ports:
       - "80:80"
-      - "443:443"
-    restart: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 256M
 
 volumes:
   postgres_data:
