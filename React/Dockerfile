@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/usr/src/app/.npm \
 
 # Copy the rest of the application code to the container
 COPY . .
-
+EXPOSE 3000
 # ENV variables from .yml files
 #ARG VITE_API_URL
 
