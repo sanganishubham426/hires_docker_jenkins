@@ -13,6 +13,8 @@ RUN apt-get update && \
 # Set the working directory
 WORKDIR /hires
 
+EXPOSE 8000
+
 # Copy the requirements file and install dependencies
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
