@@ -17,7 +17,7 @@ services:
       timeout: 10s
 
   hires:
-    image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires:latest
+    image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires:${IMAGE_TAG}  # Use dynamic tag
     env_file:
       - .env
     deploy:
@@ -27,7 +27,7 @@ services:
           memory: 512M
 
   react-production:
-    image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-react:latest
+    image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-react:${IMAGE_TAG}  # Use dynamic tag
     deploy:
       replicas: 1
       resources:
@@ -35,7 +35,7 @@ services:
           memory: 256M
 
   nginx:
-    image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-nginx:latest
+    image: 311141541828.dkr.ecr.us-east-1.amazonaws.com/hires-nginx:${IMAGE_TAG}  # Use dynamic tag
     ports:
       - "80:80"
     deploy:
